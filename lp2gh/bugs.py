@@ -1,4 +1,7 @@
+import re
+
 import gflags
+import jsontemplate
 
 from lp2gh import client
 from lp2gh import exporter
@@ -33,6 +36,24 @@ BUG_IMPORTANCE = ['Critical',
                   'Low',
                   'Wishlist',
                   'Undecided']
+
+
+
+bug_matcher_re = re.compile(r'bug (\d+)')
+
+
+BUG_SUMMARY_TEMPLATE = """
+------------------------------------
+Imported from Launchpad using lp2gh.
+
+ * date created: {date_created}{.section owner}
+ * owner: {owner}{.end}{.section assignee}
+ * assignee: {assignee}{.end}{.section duplicate_of}
+ * duplicate of: #{duplicate_of}{.end}{.section duplicates}
+ * the following issues have been marked as duplicates of this one:{.repeated section @}
+   * #{@}{.end}{.end}
+ * the launchpad url was {lp_url}
+"""
 
 
 def message_to_dict(message):
@@ -75,16 +96,35 @@ def list_bugs(project, only_open=None):
   return project.searchTasks(status=only_open and None or BUG_STATUS)
 
 
+def _replace_bugs(s, bug_mapping):
+  matches = bug_matcher_re.findall(s)
+  for match in matches:
+    if match in bug_mapping:
+      new_id = bug_mapping[match]
+      s = s.replace('bug %s' % match, 'bug #%s' % new_id)
+  return s
+
+
 def translate_auto_links(bug, bug_mapping):
   """Update references to launchpad bug numbers to reference issues."""
-  bug['description'] = bug['description'] + '\nTRANSLATED'
+  bug['description'] = _replace_bugs(bug['description'], bug_mapping)
+  #bug['description'] = '```\n' + bug['description'] + '\n```'
+  for comment in bug['comments']:
+    comment['content'] = _replace_bugs(comment['content'], bug_mapping)
+    #comment['content'] = '```\n' + comment['content'] + '\n```'
+
   return bug
 
 
 def add_summary(bug, bug_mapping):
   """Add the summary information to the bug."""
-  bug['description'] = bug['description'] + '\nSUMMARY'
+  t = jsontemplate.FromString(BUG_SUMMARY_TEMPLATE)
+  bug['duplicate_of'] = bug['duplicate_of'] in bug_mapping and bug_mapping[bug['duplicate_of']] or None
+  bug['duplicates'] = [bug_mapping[x] for x in bug['duplicates']
+                       if x in bug_mapping]
+  bug['description'] = bug['description'] + '\n' + t.expand(bug)
   return bug
+
 
 def export(project, only_open=None):
   o = []
@@ -105,14 +145,14 @@ def import_(repo, bugs, milestones_map=None):
   for status in BUG_STATUS:
     try:
       e.emit('create label %s' % status)
-      labels.create_label(repo, status)
+      labels.create_label(repo, status, 'ddffdd')
     except Exception:
       pass
 
   for importance in BUG_IMPORTANCE:
     try:
       e.emit('create label %s' % importance)
-      labels.create_label(repo, importance)
+      labels.create_label(repo, importance, 'ffdddd')
     except Exception:
       pass
 
@@ -161,3 +201,5 @@ def import_(repo, bugs, milestones_map=None):
       # TODO(termie): username mapping
       by_line = '(by %s)' % msg['owner']
       comments.append(body='%s\n%s' % (by_line, msg['content']))
+
+  return mapping
