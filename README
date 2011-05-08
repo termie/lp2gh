@@ -1,0 +1,112 @@
+Ready to make the switch? Here's how.
+
+
+  -- milestone as label
+     or milestone as milestone
+  -- blueprints as issues
+  -- status as label
+  -- importance as label
+  -- assignee as assignee
+     or assignee as mention
+
+
+Exported bugs look like
+   {'id': bug.id,
+    'status': bug_task.status,
+    'importance': bug_task.importance,
+    'assignee': assignee and assignee.name or None,
+    'owner': owner.name,
+    'milestone': milestone and milestone.name,
+    'title': bug.title,
+    'description': bug.description,
+    'duplicate_of': bug.duplicate_of.id,
+    'duplicates': [x.id for x in bug.duplicates]
+    'date_created': to_timestamp(bug_task.date_created),
+    'comments': [message_to_dict(x) for x in messages]},
+    'tags': bug.tags.split(),
+    'security_related': bug.security_related,
+
+  id -> local mapping db of new ids to old ids
+  status -> label and state
+  importance -> (optional) label
+  assignee -> (optional) to comment with mention
+  owner -> (optional) comment with mention
+  milestone -> (optional) milestone or label
+  title -> title
+  description -> body
+  duplicate_of_link --> comment pointing to new id of duplicated
+  duplicates_collection_link --> comment mentioning new ids of duplicates
+  comments -> commments
+  comment pointing to original launchpad link
+  tags -> labels
+
+
+Those comments look like:
+   {'owner': owner.name,
+    'content': message.content,
+    'date_created': to_timestamp(message.date_created),
+    }
+
+Exported milestones look like:
+   {'name': ms.name,
+    'date_targeted': date_targeted and to_timestamp(date_targeted) or None})
+
+
+Exported specs look like:
+  {'assignee': spec.assignee.name,
+   'bugs': [x.id for x in spec.bugs],
+   'definition_status': spec.definition_status,
+   'dependencies': [x.name for x in spec.dependencies],
+   'implementation_status': spec.implementation_status,
+   'drafter': spec.drafter.name,
+   'date_created': to_timestamp(spec.date_created),
+   'lifecycle_status': spec.lifecycle_status,
+   'priority': spec.priority,
+   'summary': spec.summary,
+   'title': spec.title,
+   'whiteboard': spec.whiteboard,
+   'url': spec.specification_url
+
+
+Status labels are:
+  ['New',
+   'Incomplete',
+   'Invalid',
+   "Won't Fix",
+   'Confirmed',
+   'Triaged',
+   'In Progress',
+   'Fix Committed',
+   'Fix Released']
+
+
+Definition status labels are:
+  Approved
+  Pending Approval
+  Review
+  Drafting
+  Discussion
+  New
+  Superseded
+  Obsolete
+
+Implementation status labels are:
+  Unknown
+  Not started
+  Deferred
+  Needs Infrastructure
+  Blocked
+  Started
+  Slow progress
+  Good progress
+  Beta Available
+  Needs Code Review
+  Deployment
+  Implemented
+  Informational
+
+Lifecycle status labels are:
+  Not started
+  Started
+  Complete
+
