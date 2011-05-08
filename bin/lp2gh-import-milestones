@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+import json
+import os
+import sys
+
+# If ../lp2gh/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+POSSIBLE_TOPDIR = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
+                                   os.pardir))
+if os.path.exists(os.path.join(POSSIBLE_TOPDIR, 'lp2gh', '__init__.py')):
+    sys.path.insert(0, POSSIBLE_TOPDIR)
+
+
+import gflags
+from github3 import client
+
+from lp2gh import milestones
+
+
+FLAGS = gflags.FLAGS
+
+
+if __name__ == '__main__':
+  argv = FLAGS(sys.argv)
+  c = client.Client(FLAGS.username, FLAGS.password)
+  repo = c.repo(FLAGS.repo_user, FLAGS.repo_name)
+  data = json.load(open(argv[1]))
+  o = milestones.import_(repo, data)
+  print json.dumps(o, indent=2)

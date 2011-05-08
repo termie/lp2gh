@@ -6,6 +6,10 @@ from launchpadlib import launchpad
 
 FLAGS = gflags.FLAGS
 gflags.DEFINE_string('project', None, 'which project to export')
+gflags.DEFINE_string('username', None, 'github username')
+gflags.DEFINE_string('password', None, 'github password')
+gflags.DEFINE_string('repo_user', None, 'github repo user')
+gflags.DEFINE_string('repo_name', None, 'github repo name')
 
 
 class Client():
