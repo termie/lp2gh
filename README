@@ -19,8 +19,8 @@ Exported bugs look like
     'milestone': milestone and milestone.name,
     'title': bug.title,
     'description': bug.description,
-    'duplicate_of': bug.duplicate_of.id,
-    'duplicates': [x.id for x in bug.duplicates]
+    'duplicate_of': duplicate_of.id,
+    'duplicates': [x.id for x in duplicates]
     'date_created': to_timestamp(bug_task.date_created),
     'comments': [message_to_dict(x) for x in messages]},
     'tags': bug.tags.split(),
@@ -110,3 +110,10 @@ Lifecycle status labels are:
   Started
   Complete
 
+Importance is:
+  Critical
+  High
+  Medium
+  Low
+  Wishlist
+  Undecided

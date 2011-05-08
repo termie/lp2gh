@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+import json
+import os
+import sys
+
+import gflags
+
+# If ../lp2gh/__init__.py exists, add ../ to Python search path, so that
+# it will override what happens to be installed in /usr/(local/)lib/python...
+POSSIBLE_TOPDIR = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                   os.pardir,
+                                   os.pardir))
+if os.path.exists(os.path.join(POSSIBLE_TOPDIR, 'lp2gh', '__init__.py')):
+    sys.path.insert(0, POSSIBLE_TOPDIR)
+
+from lp2gh import client
+from lp2gh import bugs
+
+
+FLAGS = gflags.FLAGS
+
+
+if __name__ == '__main__':
+  argv = FLAGS(sys.argv)
+  o = []
+  c = client.Client()
+  if not FLAGS.project and len(argv) > 1:
+    FLAGS.project = argv[1]
+  project = c.project(FLAGS.project)
+  all_bugs = bugs.list_bugs(project)
+  for x in all_bugs:
+    print >> sys.stderr, 'fetching %s' % x.title
+    rv = bugs.bug_task_to_dict(x)
+    o.append(rv)
+  print json.dumps(o, indent=2)
+
+
