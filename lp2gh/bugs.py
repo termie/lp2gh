@@ -1,4 +1,13 @@
+import gflags
+
+from lp2gh import client
+from lp2gh import exporter
 from lp2gh import util
+
+
+FLAGS = gflags.FLAGS
+gflags.DEFINE_boolean('only_open_bugs', False,
+                      'should we include closed bugs')
 
 
 BUG_STATUS = ['New',
@@ -58,5 +67,20 @@ def bug_task_to_dict(bug_task):
           }
 
 
-def list_bugs(project, include_closed=True):
-  return project.searchTasks(status=include_closed and BUG_STATUS or None)
+def list_bugs(project, only_open=None):
+  if only_open is None:
+    only_open = FLAGS.only_open_bugs
+  return project.searchTasks(status=only_open and None or BUG_STATUS)
+
+
+def export(project, only_open=None):
+  o = []
+  c = client.Client()
+  p = c.project(project)
+  e = exporter.Exporter()
+  bugs = list_bugs(p, only_open=only_open)
+  for x in bugs:
+    e.emit('fetching %s' % x.title)
+    rv = bug_task_to_dict(x)
+    o.append(rv)
+  return o

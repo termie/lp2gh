@@ -14,7 +14,7 @@ if os.path.exists(os.path.join(POSSIBLE_TOPDIR, 'lp2gh', '__init__.py')):
 
 import gflags
 
-from lp2gh import bugs
+from lp2gh import milestones
 
 
 FLAGS = gflags.FLAGS
@@ -24,7 +24,5 @@ if __name__ == '__main__':
   argv = FLAGS(sys.argv)
   if not FLAGS.project and len(argv) > 1:
     FLAGS.project = argv[1]
-  o = bugs.export(FLAGS.project)
+  o = milestones.export(FLAGS.project)
   print json.dumps(o, indent=2)
-
-
