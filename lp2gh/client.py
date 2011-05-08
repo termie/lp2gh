@@ -10,6 +10,12 @@ gflags.DEFINE_string('username', None, 'github username')
 gflags.DEFINE_string('password', None, 'github password')
 gflags.DEFINE_string('repo_user', None, 'github repo user')
 gflags.DEFINE_string('repo_name', None, 'github repo name')
+gflags.DEFINE_string('milestones_map', None,
+                     'file with mapping data for milestones')
+gflags.DEFINE_string('bugs_map', None,
+                     'file with mapping data for bugs')
+gflags.DEFINE_string('blueprints_map', None,
+                     'file with mapping data for blueprints')
 
 
 class Client():

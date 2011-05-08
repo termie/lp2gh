@@ -30,7 +30,9 @@ class Repo(object):
 
   def issue(self, id_):
     """Return a Resource of an issue."""
-    pass
+    url = '%s/%s/%s/issues/%s' % (self.BASE_URL, self.user, self.repo, id_)
+    resp = self.client.get(url)
+    return Resource(self.client, url, json.loads(resp.read()))
 
   def milestones(self, **kw):
     """Return a PaginatedResourceList of milestones."""
@@ -44,6 +46,12 @@ class Repo(object):
     resp = self.client.get(url, **kw)
     return PaginatedResourceList.FromResponse(self.client, resp)
 
+  def comments(self, issue, **kw):
+    """Return a PaginatedResourceList of comments for an issue."""
+    url = '%s/%s/%s/issues/%s/comments' % (
+        self.BASE_URL, self.user, self.repo, issue)
+    resp = self.client.get(url, **kw)
+    return PaginatedResourceList.FromResponse(self.client, resp)
 
 
 class ResourceList(object):

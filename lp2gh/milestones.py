@@ -58,10 +58,7 @@ def import_(repo, milestones):
 
     try:
       rv = ms.append(**params)
-      print rv
-      url = rv['url']
-      id_ = url.split('/')[-1]
-      o[x['name']] = id_
+      o[x['name']] = rv['number']
     except Exception as e:
       print >> sys.stderr, e
   return o

@@ -2,6 +2,7 @@ import gflags
 
 from lp2gh import client
 from lp2gh import exporter
+from lp2gh import labels
 from lp2gh import util
 
 
@@ -74,6 +75,17 @@ def list_bugs(project, only_open=None):
   return project.searchTasks(status=only_open and None or BUG_STATUS)
 
 
+def translate_auto_links(bug, bug_mapping):
+  """Update references to launchpad bug numbers to reference issues."""
+  bug['description'] = bug['description'] + '\nTRANSLATED'
+  return bug
+
+
+def add_summary(bug, bug_mapping):
+  """Add the summary information to the bug."""
+  bug['description'] = bug['description'] + '\nSUMMARY'
+  return bug
+
 def export(project, only_open=None):
   o = []
   c = client.Client()
@@ -85,3 +97,67 @@ def export(project, only_open=None):
     rv = bug_task_to_dict(x)
     o.append(rv)
   return o
+
+
+def import_(repo, bugs, milestones_map=None):
+  e = exporter.Exporter()
+  # set up all the labels we know
+  for status in BUG_STATUS:
+    try:
+      e.emit('create label %s' % status)
+      labels.create_label(repo, status)
+    except Exception:
+      pass
+
+  for importance in BUG_IMPORTANCE:
+    try:
+      e.emit('create label %s' % importance)
+      labels.create_label(repo, importance)
+    except Exception:
+      pass
+
+  tags = []
+  for x in bugs:
+    tags.extend(x['tags'])
+  tags = set(tags)
+  for tag in tags:
+    try:
+      e.emit('create label %s' % tag)
+      labels.create_label(repo, tag)
+    except Exception:
+      pass
+
+  mapping = {}
+  # first pass
+  issues = repo.issues()
+  for bug in bugs:
+    e.emit('create issue %s' % bug['title'])
+    params = {'title': bug['title'],
+              'body': bug['description'],
+              'labels': bug['tags'] + [bug['importance']] + [bug['status']],
+              'created_at': bug['date_created'],
+              }
+
+    if bug['milestone']:
+      params['milestone'] = milestones_map[bug['milestone']],
+
+    rv = issues.append(**params)
+    mapping[bug['id']] = rv['number']
+
+  # second pass
+  for bug in bugs:
+    e.emit('second pass on issue %s' % bug['title'])
+    bug = translate_auto_links(bug, mapping)
+    bug = add_summary(bug, mapping)
+    issue_id = mapping[bug['id']]
+    issue = repo.issue(issue_id)
+    params = {'body': bug['description']}
+    if bug['status'] in BUG_CLOSED_STATUS:
+      params['state'] = 'closed'
+    issue.update(params)
+
+    comments = repo.comments(issue_id)
+    for msg in bug['comments']:
+      # TODO(termie): username mapping
+      by_line = '(by %s)' % msg['owner']
+      comments.append(body='%s\n%s' % (by_line, msg['content']))
