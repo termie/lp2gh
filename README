@@ -86,7 +86,7 @@ Exported bugs look like
     'comments': [message_to_dict(x) for x in messages]},
     'tags': bug.tags.split(),
     'security_related': bug.security_related,
-    'lp_url': bug.self_link,
+    'lp_url': bug.web_link,
 
   id -> local mapping db of new ids to old ids
   status -> label and state
@@ -131,7 +131,7 @@ Exported specs look like:
   'title': spec.title,
   'whiteboard': spec.whiteboard,
   'url': spec.specification_url,
-  'lp_url': spec.self_link,
+  'lp_url': spec.web_link,
   }
 
 

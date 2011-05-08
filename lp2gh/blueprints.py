@@ -66,7 +66,7 @@ def specification_to_dict(spec):
           'title': spec.title,
           'whiteboard': spec.whiteboard,
           'url': spec.specification_url,
-          'lp_url': spec.self_link,
+          'lp_url': spec.web_link,
           }
 
 

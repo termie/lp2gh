@@ -15,7 +15,7 @@ class Client():
   @property
   def conn(self):
     if not self.__conn:
-      cachedir = './cachedir'
+      cachedir = os.path.abspath('./cachedir')
       if not os.path.exists(cachedir):
         os.mkdir(cachedir)
       lp = launchpad.Launchpad.login_anonymously(
