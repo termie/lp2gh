@@ -64,6 +64,7 @@ def bug_task_to_dict(bug_task):
           'comments': [message_to_dict(x) for x in messages],
           'tags': bug.tags,
           'security_related': bug.security_related,
+          'lp_url': self_link,
           }
 
 

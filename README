@@ -9,6 +9,67 @@ Ready to make the switch? Here's how.
   -- assignee as assignee
      or assignee as mention
 
+General order of events for a full import:
+ - Generate all default labels that don't exist
+ - Import all the milestones
+   - Make a milestone name -> milestone id mapping db
+ - Import bugs
+   - Gather up all the tags that are used and generate those first
+   - First pass import simply, setting basic values, labels and milestones
+   - Build old id -> new id mapping db
+   - Second pass
+     - Update the description translating auto-linkable values
+     - Build a 'summary' comment that includes appropriate @mentions, possibly
+       translating from a mapping db of lp names to gh names.
+     - Add all comments, translating auto-linkable values
+  - Import blueprints
+    - First pass set basic values
+    - Build spec name -> new id mapping db
+    - Second pass
+     - Update the description translating auto-linkable values
+     - Build a 'summary' comment that includes appropriate @mentions, possibly
+       translating from a mapping db of lp names to gh names.
+     - Add whiteboard comments, translating auto-linkable values
+
+
+Summary bug template <<EOF
+Imported from Launchpad using lp2gh.
+
+  * date created: %(date_created)s
+  * owner: @%(owner)s
+  * assignee: @%(assignee)s
+  * marked duplicate of issue #%(new_issued_id)s
+  * the following issues have been marked duplicates of this:
+    * issue #%(duplicate_1)s
+    * issue #%(duplicate_n)s
+  * the launchpad url was %(lp_url)s
+EOF
+
+
+Summary blueprint template <<EOF
+Imported from Launchpad using lp2gh.
+
+  * date created: %(date_created)s
+  * drafter: @%(drafter)s
+  * assignee: @%(assignee)s
+  * marked duplicate of issue #%(new_issued_id)s
+  * the following issues have been associated with this:
+    * issue #%(issue_1)s
+    * issue #%(issue_n)s
+  * this spec depends on these specs:
+    * spec #%(issue_1)s
+    * spec #%(issue_n)s
+  * full spec url: %(url)s
+  * the launchpad url was %(lp_url)s
+EOF
+
+
+Whiteboard blueprint template <<EOF
+The whiteboard from the launchpad original:
+
+%(whiteboard)s
+EOF
+
 
 Exported bugs look like
    {'id': bug.id,
@@ -25,6 +86,7 @@ Exported bugs look like
     'comments': [message_to_dict(x) for x in messages]},
     'tags': bug.tags.split(),
     'security_related': bug.security_related,
+    'lp_url': bug.self_link,
 
   id -> local mapping db of new ids to old ids
   status -> label and state
@@ -47,6 +109,7 @@ Those comments look like:
     'date_created': to_timestamp(message.date_created),
     }
 
+
 Exported milestones look like:
    {'name': ms.name,
     'date_targeted': date_targeted and to_timestamp(date_targeted) or None})
@@ -67,7 +130,8 @@ Exported specs look like:
   'summary': spec.summary,
   'title': spec.title,
   'whiteboard': spec.whiteboard,
-  'url': spec.specification_url
+  'url': spec.specification_url,
+  'lp_url': spec.self_link,
   }
 
 
@@ -93,6 +157,7 @@ Definition status labels are:
   Superseded
   Obsolete
 
+
 Implementation status labels are:
   Unknown
   Not started
@@ -108,10 +173,12 @@ Implementation status labels are:
   Implemented
   Informational
 
+
 Lifecycle status labels are:
   Not started
   Started
   Complete
+
 
 Importance is:
   Critical
@@ -120,6 +187,7 @@ Importance is:
   Low
   Wishlist
   Undecided
+
 
 Priorities are:
   Not
