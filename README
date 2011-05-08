@@ -53,19 +53,22 @@ Exported milestones look like:
 
 
 Exported specs look like:
-  {'assignee': spec.assignee.name,
-   'bugs': [x.id for x in spec.bugs],
-   'definition_status': spec.definition_status,
-   'dependencies': [x.name for x in spec.dependencies],
-   'implementation_status': spec.implementation_status,
-   'drafter': spec.drafter.name,
-   'date_created': to_timestamp(spec.date_created),
-   'lifecycle_status': spec.lifecycle_status,
-   'priority': spec.priority,
-   'summary': spec.summary,
-   'title': spec.title,
-   'whiteboard': spec.whiteboard,
-   'url': spec.specification_url
+ {'assignee': assignee and assignee.name or None,
+  'bugs': [x.id for x in spec.bugs],
+  'definition_status': spec.definition_status,
+  'dependencies': [x.name for x in spec.dependencies],
+  'date_created': util.to_timestamp(spec.date_created),
+  'drafter': drafter and drafter.name or None,
+  'implementation_status': spec.implementation_status,
+  'lifecycle_status': spec.lifecycle_status,
+  'milestone': milestone and milestone.name or None,
+  'name': spec.name,
+  'priority': spec.priority,
+  'summary': spec.summary,
+  'title': spec.title,
+  'whiteboard': spec.whiteboard,
+  'url': spec.specification_url
+  }
 
 
 Status labels are:
@@ -117,3 +120,12 @@ Importance is:
   Low
   Wishlist
   Undecided
+
+Priorities are:
+  Not
+  Undefined
+  Low
+  Medium
+  High
+  Essential
+
