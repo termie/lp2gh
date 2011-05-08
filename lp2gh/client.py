@@ -19,7 +19,7 @@ class Client():
       if not os.path.exists(cachedir):
         os.mkdir(cachedir)
       lp = launchpad.Launchpad.login_anonymously(
-          'lp2gh', 'production', cachedir)
+          'lp2gh', 'production', cachedir, version='devel')
       self.__conn = lp
     return self.__conn
 
