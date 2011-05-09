@@ -1,4 +1,5 @@
 import re
+import urllib2
 
 import gflags
 import jsontemplate
@@ -146,26 +147,32 @@ def import_(repo, bugs, milestones_map=None):
     try:
       e.emit('create label %s' % status)
       labels.create_label(repo, status, 'ddffdd')
-    except Exception:
-      pass
+    except Exception as err:
+      e.emit('exception: %s' % err.read())
 
   for importance in BUG_IMPORTANCE:
     try:
       e.emit('create label %s' % importance)
       labels.create_label(repo, importance, 'ffdddd')
-    except Exception:
-      pass
+    except Exception as err:
+      e.emit('exception: %s' % err.read())
 
   tags = []
   for x in bugs:
     tags.extend(x['tags'])
   tags = set(tags)
+
+  # NOTE(termie): workaround for github case-sensitivity bug
+  defaults_lower = [x.lower() for x in (BUG_STATUS + BUG_IMPORTANCE)]
+  tags = [x for x in tags if str(x.lower()) not in defaults_lower]
+  tags_map = dict((x.lower(), x) for x in (tags + BUG_STATUS + BUG_IMPORTANCE))
+
   for tag in tags:
     try:
       e.emit('create label %s' % tag)
       labels.create_label(repo, tag)
-    except Exception:
-      pass
+    except Exception as err:
+      e.emit('exception: %s' % err.read())
 
   mapping = {}
   # first pass
@@ -175,13 +182,21 @@ def import_(repo, bugs, milestones_map=None):
     params = {'title': bug['title'],
               'body': bug['description'],
               'labels': bug['tags'] + [bug['importance']] + [bug['status']],
-              'created_at': bug['date_created'],
+              # NOTE(termie): github does not support setting created_at
+              #'created_at': bug['date_created'],
               }
 
-    if bug['milestone']:
-      params['milestone'] = milestones_map[bug['milestone']],
+    # NOTE(termie): workaround for github case-sensitivity bug
+    params['labels'] = list(set(
+      [labels.translate_label(tags_map[x.lower()]) for x in params['labels']]))
 
-    rv = issues.append(**params)
+    e.emit('with params: %s' % params)
+    try:
+      rv = issues.append(**params)
+    except urllib2.HTTPError as err:
+      e.emit('exception: %s' % err.read())
+      raise
+
     mapping[bug['id']] = rv['number']
 
   # second pass
@@ -191,15 +206,33 @@ def import_(repo, bugs, milestones_map=None):
     bug = add_summary(bug, mapping)
     issue_id = mapping[bug['id']]
     issue = repo.issue(issue_id)
-    params = {'body': bug['description']}
-    if bug['status'] in BUG_CLOSED_STATUS:
-      params['state'] = 'closed'
-    issue.update(params)
 
+    # add all the comments
     comments = repo.comments(issue_id)
     for msg in bug['comments']:
       # TODO(termie): username mapping
       by_line = '(by %s)' % msg['owner']
-      comments.append(body='%s\n%s' % (by_line, msg['content']))
+      try:
+        comments.append(body='%s\n%s' % (by_line, msg['content']))
+      except urllib2.HTTPError as err:
+        e.emit('exception: %s' % err.read())
+        raise
+
+    # update the issue
+    params = {'body': bug['description']}
+    if bug['status'] in BUG_CLOSED_STATUS:
+      params['state'] = 'closed'
+
+    # NOTE(termie): workaround a bug in github where it does not allow
+    #               creating bugs that are assigned to double-digit milestones
+    #               but does allow editing an existing bug
+    if bug['milestone']:
+      params['milestone'] = milestones_map[bug['milestone']]
+    try:
+      issue.update(params)
+    except urllib2.HTTPError as err:
+      e.emit('exception: %s' % err.read())
+      raise
+
 
   return mapping

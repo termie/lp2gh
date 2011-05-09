@@ -12,7 +12,6 @@ gflags.DEFINE_boolean('only_active_milestones', False,
                       'should we include closed bugs')
 
 
-
 def milestone_to_dict(ms):
   date_targeted = ms.date_targeted
   return {'name': ms.name,
@@ -44,21 +43,37 @@ def export(project, only_active=None):
   return o
 
 
-def import_(repo, milestones):
+def import_(repo, milestones, milestones_map=None):
+  """Import or update milestones."""
+  milestones_map = milestones_map and milestones_map or {}
+
   o = {}
+  e = exporter.Exporter()
   ms = repo.milestones()
+  closed_ms = repo.milestones(state='closed')
+  open_ms_by_id = dict((x['number'], x) for x in ms)
+  closed_ms_by_id = dict((x['number'], x) for x in closed_ms)
+  ms_by_id = open_ms_by_id.copy()
+  ms_by_id.update(closed_ms_by_id)
+
+
   for x in milestones:
-    params = {'title': x['name'],
-              'state': x['active'] and 'open' or 'closed'}
+    params = {'title': x['name']}
+    params['state'] = x['active'] and 'open' or 'closed'
+
     if x['date_targeted']:
       params['due_on'] = x['date_targeted']
 
     if x['summary']:
       params['description'] = x['summary']
 
+    # either add a new one or update existing
     try:
-      rv = ms.append(**params)
+      if x['name'] in milestones_map and milestones_map[x['name']] in ms_by_id:
+        rv = ms_by_id[milestones_map[x['name']]].update(params)
+      else:
+        rv = ms.append(**params)
       o[x['name']] = rv['number']
-    except Exception as e:
-      print >> sys.stderr, e
+    except Exception as err:
+      e.emit('exception: %s' % err)
   return o

@@ -9,19 +9,20 @@ Ready to make the switch? Here's how.
   -- assignee as assignee
      or assignee as mention
 
-General order of events for a full import:
- - Generate all default labels that don't exist
- - Import all the milestones
-   - Make a milestone name -> milestone id mapping db
- - Import bugs
-   - Gather up all the tags that are used and generate those first
-   - First pass import simply, setting basic values, labels and milestones
-   - Build old id -> new id mapping db
-   - Second pass
-     - Update the description translating auto-linkable values
-     - Build a 'summary' comment that includes appropriate @mentions, possibly
+General order of events for a full import: (+ == done, - == in progress)
+ + Generate all default labels that don't exist
+ + Import all the milestones
+   + Make a milestone name -> milestone id mapping db
+ + Import bugs
+   + Gather up all the tags that are used and generate those first
+   + First pass import simply, setting basic values, labels
+   + Build old id -> new id mapping db
+   + Second pass
+     + Add all comments, translating auto-linkable values
+     + Build a 'summary' text that includes appropriate @mentions, possibly
        translating from a mapping db of lp names to gh names.
-     - Add all comments, translating auto-linkable values
+     + Update the description translating auto-linkable values and apply the
+       milestones
   - Import blueprints
     - First pass set basic values
     - Build spec name -> new id mapping db

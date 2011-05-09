@@ -26,5 +26,8 @@ if __name__ == '__main__':
   c = client.Client(FLAGS.username, FLAGS.password)
   repo = c.repo(FLAGS.repo_user, FLAGS.repo_name)
   data = json.load(open(argv[1]))
-  o = milestones.import_(repo, data)
+  milestones_map = {}
+  if FLAGS.milestones_map:
+    milestones_map = json.load(open(FLAGS.milestones_map))
+  o = milestones.import_(repo, data, milestones_map=milestones_map)
   print json.dumps(o, indent=2)
