@@ -39,7 +39,12 @@ checkout _and_ git checkout of each branch.
 
 To begin the export run the following::
 
+  # <your_project_name> is the part after 'lp:', e.g. nova instead of lp:nova
   $ bin/lp2gh-export-branches <your_project_name>
+
+
+Note that this will only work on base projects, if you are trying to get a
+specific branch only, I refer you to just using git-bzr-ng directly.
 
 That will make a directory named <your_project_name> and begin importing all
 of the branches associated with it. The branches will be named according to the
