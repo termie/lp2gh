@@ -75,9 +75,20 @@ one for the team!) and you'll probably want to delete them all eventually::
   $ git push --all git@github.com:termie/nova
 
 That will take a little while, though probably much less time than the import.
+
 Also, for the moment, it will also push all of the bzr/* tracking branches,
 which is a waste of space and time, but easier than coming up with some way
-of filtering them out (until somebody tells me how).
+of filtering them out (until somebody tells me how). If you really want to you
+can delete those extra branches before pushing with::
+
+  $ git branch -D <branch_name>
+
+or delete them afterwards with::
+
+  $ git push git@github.com:termie/nova :<branch_name>
+
+Where the colon in front means, effectively, "push nothingness to
+<branch_name>"
 
 
 Getting Your Project Members On Board
