@@ -60,6 +60,10 @@ def main(proj):
     mkdir(cachedir)
   except Exception:
     pass
+
+  if proj.startswith('lp:'):
+    proj = proj[3:]
+
   lp = launchpad.Launchpad.login_anonymously(
       'lp2gh', 'production', cachedir)
   project = lp.projects[proj]
