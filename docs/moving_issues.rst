@@ -30,6 +30,8 @@ content to point to the new issue numbers and adding a summary to the
 description that shows some additional history of the issue and a link to the
 original Launchpad bug or blueprint.
 
+They will all be imported as GitHub issues and tagged appropriately.
+
 
 Exporting Your Bugs
 -------------------
@@ -140,3 +142,15 @@ Which will result in a `my_blueprints.json` that looks like::
       "implementation_status": "Not started"
     }
   ]
+
+
+Getting All That Stuff On To GitHub
+-----------------------------------
+
+This part starts getting a bit more complicated because the order you do things
+in will matter more. While it is possible to import only bugs or only blueprints or only milestones this guide will focus on the more involved process of
+importing all three.
+
+The general way of the importers is that as they are run they produce an output
+that is a mapping of the old Launchpad identifiers to the new GitHub
+identifiers.
