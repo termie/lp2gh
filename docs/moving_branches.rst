@@ -75,6 +75,9 @@ one for the team!) and you'll probably want to delete them all eventually::
   $ git push --all git@github.com:termie/nova
 
 That will take a little while, though probably much less time than the import.
+Also, for the moment, it will also push all of the bzr/* tracking branches,
+which is a waste of space and time, but easier than coming up with some way
+of filtering them out (until somebody tells me how).
 
 
 Getting Your Project Members On Board
