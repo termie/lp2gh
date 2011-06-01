@@ -37,7 +37,7 @@ This process is easy to get started but will likely take a while if you have
 a large project with many branches, you will effectively be making a bzr
 checkout _and_ git checkout of each branch.
 
-To begin the export run the following:
+To begin the export run the following::
 
   $ bin/lp2gh-export-branches <your_project_name>
 
@@ -57,7 +57,7 @@ Let's assume your project is named 'nova' and will be owned by an organization
 named 'openstack' that you can create repositories in and your github user is
 'termie'. To reduce the size of the main repository you aren't going to upload
 all the branches to the fork owned by the organization, we're just going to
-push master.
+push master::
 
   $ cd nova
   $ git push git@github.com:openstack/nova master
@@ -65,7 +65,7 @@ push master.
 This will push the 'base' code to the main repository. Once it is done, go to
 that project on github.com, http://github.com/openstack/nova, and fork it. We
 are going to upload the rest of the branches to your fork (thanks for taking
-one for the team!) and you'll probably want to delete them all eventually.
+one for the team!) and you'll probably want to delete them all eventually::
 
   $ git push --all git@github.com:termie/nova
 
@@ -77,7 +77,7 @@ Getting Your Project Members On Board
 
 Now that you've got all the code related to the project on to GitHub we still
 need to get it into the hands of the original authors. Here's what each of them
-should do:
+should do::
 
   # First, go to http://github.com/openstack/nova and fork that project.
   $ git clone git@github.com:<your_name>/nova
@@ -91,11 +91,11 @@ should do:
   # Push all your local branches to your GitHub fork.
   $ git push -a origin
 
-Vwalla! Now you can work on any of those branches by doing:
+Vwalla! Now you can work on any of those branches by doing::
 
   $ git checkout <branch_name>
 
-And later pushing back to GitHub by:
+And later pushing back to GitHub by::
 
   $ git push origin <branch_name>
 
@@ -122,12 +122,12 @@ Within that fork, developers will make branches to support their feature work
 and periodically, usually when about to issue a pull request -- GitHub's version
 of a merge proposal, pull down changes from the upstream organization master
 into their master. Since this will happen relatively often it is easiest to add
-an additional 'remote' target for it:
+an additional 'remote' target for it::
 
   $ git remote add openstack http://github.com/openstack/nova.git
 
 To update your feature branches before issuing a pull request you will do
-something like:
+something like::
 
   $ git checkout master
   $ git pull openstack
