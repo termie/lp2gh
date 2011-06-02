@@ -153,4 +153,88 @@ importing all three.
 
 The general way of the importers is that as they are run they produce an output
 that is a mapping of the old Launchpad identifiers to the new GitHub
-identifiers.
+identifiers. Those mappings will be used by other importers to support the
+translation of content in the bugs, etcetera.
+
+
+--------------------
+Importing Milestones
+--------------------
+
+Milestones don't have any other dependencies so we'll import those first.
+
+You'll need to have your `my_milestones.json` file around::
+
+  $ ./bin/lp2gh-import-milestones --username=<your_github_username> \
+                                  --password=<your_github_password> \
+                                  --repo_user=<target_github_repo_user> \
+                                  --repo_name=<target_github_repo_name> \
+                                  my_milestones.json > my_milestones_map.json
+
+Which will output a `my_milestones_map.json` that looks like::
+
+  {
+    "diablo-4": 3,
+    "cactus-gamma": 9,
+    "diablo-1": 6,
+    "diablo-2": 5,
+    "diablo-3": 4,
+    "bexar-gamma": 13,
+    "2010.1-rc2": 1,
+    "2011.1.1": 10,
+    "austin-final-freeze": 17,
+    "2010.1": 15,
+    "2011.2": 7,
+    "austin-feature-freeze": 18,
+    "2011.1": 11,
+    "bexar-rc": 12,
+    "austin-rc": 16,
+    "austin": 14,
+    "cactus-rc": 8,
+    "diablo-integrated-freeze": 2
+  }
+
+And will result in a a variety of empty milestones, preserving any targeted
+dates.
+
+--------------
+Importing Bugs
+--------------
+
+Similar to importing the milestones, but will make use of the mapping file
+created earlier to allow attaching bugs to milestones::
+
+  $ ./bin/lp2gh-import-bugs --username=<your_github_username> \
+                            --password=<your_github_password> \
+                            --repo_user=<target_github_repo_user> \
+                            --repo_name=<target_github_repo_name> \
+                            --milestones_map=my_milestones_map.json
+                            my_bugs.json > my_bugs_map.json
+
+This will output a `my_bugs_map.json` file that looks similar to::
+
+  [INSERT BUGS OUTPUT]
+
+And will result in all the issues being created over three passes, the first
+pass will generate all the labels (tags in Launchpad) that are being used by
+any bug. The second pass will create the basic content of the issue as it
+existed on Launchpad. Finally, the third pass will use the new bug mapping
+to translate autolinks from the Launchpad bug numbers to the GitHub issue
+numbers, add a summary to the issue description that includes additional
+information from the launchpad history of the project, and finally add all
+the comments made so far on the issue.
+
+The summary will currently look similar to::
+
+  Imported from Launchpad using lp2gh.
+
+  date created: 2011-04-04T17:52:50Z
+  owner: tpatil
+  assignee: mihgen
+  the launchpad url was https://bugs.launchpad.net/bugs/750544
+
+The comments will look similar to::
+
+  (by blamar)
+  What version of glance are you running? Although snapshotting doesn't work for me in nova trunk, this looks to be a glance issue?
+
